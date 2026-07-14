@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>claude-status</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Claude?">
+<meta name="theme-color" content="#0a0b0d">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+
+<style>
+  :root{
+    --bg:#0a0b0d;
+    --panel:#121417;
+    --line:#22262c;
+    --text:#e8eaed;
+    --dim:#6b7280;
+    --anton:#5ec8d8;   /* холодный циан — Антон */
+    --amir:#e8a545;    /* тёплый янтарь — Амир */
+    --danger:#e8546b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+    display:flex;
+    flex-direction:column;
+    min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .top{
+    padding:20px 20px 8px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .top h1{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--dim);
+    margin:0;
+  }
+  .top h1 span{color:var(--text);}
+  #conn{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11px;
+    color:var(--dim);
+  }
+  #conn.live{color:#4ade80;}
+
+  main{flex:1; padding:8px 16px 16px; display:flex; flex-direction:column; gap:12px;}
+
+  .tile{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+    transition:border-color .3s ease, box-shadow .3s ease;
+  }
+  .tile.active.who-anton{border-color:var(--anton); box-shadow:0 0 0 1px var(--anton), 0 0 24px -8px var(--anton);}
+  .tile.active.who-amir{border-color:var(--amir); box-shadow:0 0 0 1px var(--amir), 0 0 24px -8px var(--amir);}
+
+  .row{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .name{font-size:19px; font-weight:600;}
+  .dot{width:9px; height:9px; border-radius:50%; background:var(--dim); flex-shrink:0;}
+  .tile.active .dot.who-anton{background:var(--anton); box-shadow:0 0 8px var(--anton); animation:pulse 1.8s ease-in-out infinite;}
+  .tile.active .dot.who-amir{background:var(--amir); box-shadow:0 0 8px var(--amir); animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+
+  .status-line{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:13px;
+    color:var(--dim);
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .cursor{display:inline-block; width:7px; height:14px; background:var(--text); animation:blink 1s step-end infinite;}
+  .tile.active .status-line{color:var(--text);}
+  @keyframes blink{0%,49%{opacity:1;} 50%,100%{opacity:0;}}
+
+  .toggle{
+    margin-top:16px;
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:16px;
+    font-weight:600;
+    font-family:inherit;
+    color:var(--bg);
+    background:var(--text);
+    transition:transform .1s ease, opacity .2s ease;
+  }
+  .toggle:active{transform:scale(.98);}
+  .toggle.stop{background:var(--danger); color:#fff;}
+  .toggle:disabled{opacity:.4;}
+
+  .log{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px 20px;
+    flex:1;
+    overflow-y:auto;
+  }
+  .log h2{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--dim);
+    margin:0 0 10px;
+  }
+  .log-entry{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:12.5px;
+    color:var(--dim);
+    padding:6px 0;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .log-entry:last-child{border-bottom:none;}
+  .log-entry b{color:var(--text); font-weight:600;}
+
+  .setup{
+    margin:16px;
+    padding:16px;
+    border:1px dashed var(--line);
+    border-radius:14px;
+    font-size:13px;
+    color:var(--dim);
+    line-height:1.5;
+  }
+  .setup code{color:var(--text); font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+</style>
+</head>
+<body>
+
+  <div class="top">
+    <h1>claude<span>?</span>status</h1>
+    <div id="conn">offline</div>
+  </div>
+
+  <main>
+    <div class="tile" id="tile-anton">
+      <div class="row">
+        <div class="row" style="gap:10px;"><span class="dot who-anton"></span><span class="name">Антон</span></div>
+      </div>
+      <div class="status-line" id="line-anton">простаивает<span class="cursor" style="display:none"></span></div>
+      <button class="toggle" id="btn-anton">Я сел за Claude</button>
+    </div>
+
+    <div class="tile" id="tile-amir">
+      <div class="row">
+        <div class="row" style="gap:10px;"><span class="dot who-amir"></span><span class="name">Амир</span></div>
+      </div>
+      <div class="status-line" id="line-amir">простаивает</div>
+    </div>
+
+    <div class="log">
+      <h2>История</h2>
+      <div id="history"></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
