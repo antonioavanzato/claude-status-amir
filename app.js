@@ -66,6 +66,14 @@ sb.channel("presence-sync")
 
 loadInitial();
 
+// Если телефон блокировали / приложение сворачивали — websocket-соединение
+// с Supabase могло незаметно оборваться. При возврате в приложение
+// перезапрашиваем актуальные данные заново, а не доверяем старым.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadInitial();
+});
+
+
 // ---------- rendering ----------
 
 function render() {
