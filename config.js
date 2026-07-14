@@ -12,4 +12,4 @@ const NTFY_TOPIC = "claude-status-x7k2m9qp4v"; // например antonamir-cla
 
 // 3) Кто есть кто в этом приложении. "me" — за кем из двух закреплено это устройство.
 //    На телефоне Антона поставь "anton", на телефоне Амира — "amir".
-const ME = "anton"; // "anton" | "amir"
+const ME = "amir"; // "anton" | "amir"
