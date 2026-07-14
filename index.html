@@ -157,19 +157,19 @@
   </div>
 
   <main>
-    <div class="tile" id="tile-anton">
+    <div class="tile" id="tile-me">
       <div class="row">
-        <div class="row" style="gap:10px;"><span class="dot who-anton"></span><span class="name">Антон</span></div>
+        <div class="row" style="gap:10px;"><span class="dot" id="dot-me"></span><span class="name" id="name-me"></span></div>
       </div>
-      <div class="status-line" id="line-anton">простаивает<span class="cursor" style="display:none"></span></div>
-      <button class="toggle" id="btn-anton">Я сел за Claude</button>
+      <div class="status-line" id="line-me">простаивает</div>
+      <button class="toggle" id="btn-me">Я сел за Claude</button>
     </div>
 
-    <div class="tile" id="tile-amir">
+    <div class="tile" id="tile-other">
       <div class="row">
-        <div class="row" style="gap:10px;"><span class="dot who-amir"></span><span class="name">Амир</span></div>
+        <div class="row" style="gap:10px;"><span class="dot" id="dot-other"></span><span class="name" id="name-other"></span></div>
       </div>
-      <div class="status-line" id="line-amir">простаивает</div>
+      <div class="status-line" id="line-other">простаивает</div>
     </div>
 
     <div class="log">
@@ -177,6 +177,11 @@
       <div id="history"></div>
     </div>
   </main>
+
+  <div class="setup" id="setup-hint">
+    ⚙️ Открой <code>config.js</code> и вставь Supabase URL/ключ и топик ntfy,
+    затем убери этот блок из <code>index.html</code>. Подробности — в README.md.
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>

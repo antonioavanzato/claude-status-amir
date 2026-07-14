@@ -1,4 +1,6 @@
-/* claude-status — realtime presence between two people, no build step. */
+/* claude-status — realtime presence between two people, no build step.
+   Разметка одинаковая в обоих форках; кто "я", а кто "второй" — решает
+   только config.js (ME), а не HTML. */
 
 const OTHER = ME === "anton" ? "amir" : "anton";
 const NAMES = { anton: "Антон", amir: "Амир" };
@@ -8,10 +10,20 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const els = {
   conn: document.getElementById("conn"),
   history: document.getElementById("history"),
-  tile: { anton: document.getElementById("tile-anton"), amir: document.getElementById("tile-amir") },
-  line: { anton: document.getElementById("line-anton"), amir: document.getElementById("line-amir") },
-  btn: document.getElementById(`btn-${ME}`),
+  tile: { me: document.getElementById("tile-me"), other: document.getElementById("tile-other") },
+  dot: { me: document.getElementById("dot-me"), other: document.getElementById("dot-other") },
+  name: { me: document.getElementById("name-me"), other: document.getElementById("name-other") },
+  line: { me: document.getElementById("line-me"), other: document.getElementById("line-other") },
+  btn: document.getElementById("btn-me"),
 };
+
+// подписываем разметку под текущего владельца устройства
+els.name.me.textContent = NAMES[ME];
+els.name.other.textContent = NAMES[OTHER];
+els.tile.me.classList.add(`who-${ME}`);
+els.tile.other.classList.add(`who-${OTHER}`);
+els.dot.me.classList.add(`who-${ME}`);
+els.dot.other.classList.add(`who-${OTHER}`);
 
 let state = { anton: null, amir: null };
 let tickHandle = null;
@@ -57,13 +69,15 @@ loadInitial();
 // ---------- rendering ----------
 
 function render() {
-  ["anton", "amir"].forEach((who) => {
+  [
+    { who: ME, slot: "me" },
+    { who: OTHER, slot: "other" },
+  ].forEach(({ who, slot }) => {
     const data = state[who];
-    const tile = els.tile[who];
-    const line = els.line[who];
+    const tile = els.tile[slot];
+    const line = els.line[slot];
     const active = !!(data && data.active);
     tile.classList.toggle("active", active);
-    tile.classList.toggle(`who-${who}`, true);
 
     if (active && data.since) {
       line.dataset.since = new Date(data.since).getTime();
@@ -85,8 +99,11 @@ function render() {
 }
 
 function tick() {
-  ["anton", "amir"].forEach((who) => {
-    const line = els.line[who];
+  [
+    { who: ME, slot: "me" },
+    { who: OTHER, slot: "other" },
+  ].forEach(({ slot }) => {
+    const line = els.line[slot];
     const since = line.dataset.since;
     if (!since) return;
     const secs = Math.floor((Date.now() - Number(since)) / 1000);
