@@ -1,4 +1,4 @@
-const CACHE = "claude-status-v2";
+const CACHE = "claude-status-v3";
 const ASSETS = ["./", "index.html", "app.js", "config.js", "manifest.json"];
 
 self.addEventListener("install", (e) => {
